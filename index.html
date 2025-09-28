@@ -15,6 +15,7 @@ body {
   justify-content: center;
   align-items: center;
   position: relative;
+  font-family: sans-serif;
 }
 
 /* Estrellas */
@@ -28,7 +29,7 @@ body {
   transition: opacity 0.2s linear;
 }
 
-/* Partículas doradas alrededor del objeto */
+/* Partículas doradas */
 .particle {
   position: absolute;
   width: 4px;
@@ -40,7 +41,7 @@ body {
   animation: floatAround 4s linear infinite;
 }
 
-/* Haces de luz con pulso */
+/* Haces de luz */
 .beam {
   position: absolute;
   width: 10px;
@@ -51,41 +52,27 @@ body {
   animation: pulse 1.5s ease-in-out infinite alternate;
 }
 
-/* Haces izquierda */
 .beam.left1 { left: 2%; bottom: 0; height: 400px; transform: rotate(25deg); }
 .beam.left2 { left: 6%; bottom: 0; height: 380px; transform: rotate(20deg); }
 .beam.left3 { left: 10%; bottom: 0; height: 360px; transform: rotate(15deg); }
 
-/* Haces derecha */
 .beam.right1 { right: 2%; bottom: 0; height: 400px; transform: rotate(-25deg); }
 .beam.right2 { right: 6%; bottom: 0; height: 380px; transform: rotate(-20deg); }
 .beam.right3 { right: 10%; bottom: 0; height: 360px; transform: rotate(-15deg); }
 
-/* Haces centrales */
 .beam.center1 { left: 50%; bottom: 0; height: 420px; transform: translateX(-50%) rotate(0deg); }
 .beam.center2 { left: 48%; bottom: 0; height: 400px; transform: translateX(-50%) rotate(2deg); }
 .beam.center3 { left: 52%; bottom: 0; height: 400px; transform: translateX(-50%) rotate(-2deg); }
 
-/* Objeto central 3D */
-model-viewer {
-  width: 250px;
-  height: 250px;
-  z-index: 2;
-}
-
 /* Animaciones */
-@keyframes pulse {
-  from { opacity: 0.6; }
-  to { opacity: 1; }
-}
-
+@keyframes pulse { from { opacity: 0.6; } to { opacity: 1; } }
 @keyframes floatAround {
   0% { transform: translate(-50%,0) scale(0.8); opacity: 0.6; }
   50% { transform: translate(calc(-50% + 15px), -15px) scale(1); opacity: 1; }
   100% { transform: translate(-50%,0) scale(0.8); opacity: 0.6; }
 }
 
-/* Canvas de confetti encima de todo */
+/* Canvas de confetti */
 #confettiCanvas {
   position: fixed;
   top: 0;
@@ -95,6 +82,47 @@ model-viewer {
   pointer-events: none;
   z-index: 10;
 }
+
+/* Preloader barra de progreso */
+#loader {
+  position: fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:black;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:20;
+  flex-direction: column;
+}
+
+#progress-bar {
+  width: 300px;
+  height: 20px;
+  background: #333;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+#progress-fill {
+  width: 0%;
+  height: 100%;
+  background: gold;
+  transition: width 0.2s;
+  border-radius: 10px;
+}
+
+/* Modelo 3D fade-in */
+model-viewer {
+  width: 250px;
+  height: 250px;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 1s ease-in;
+}
 </style>
 </head>
 <body>
@@ -102,90 +130,13 @@ model-viewer {
 <!-- Canvas para confetti -->
 <canvas id="confettiCanvas"></canvas>
 
-<!-- Estrellas y partículas -->
-<script>
-const starCount = 30; 
-for (let i = 0; i < starCount; i++) {
-    const star = document.createElement('div');
-    star.className = 'star';
-    star.style.top = Math.random() * 100 + '%';
-    star.style.left = Math.random() * 100 + '%';
-    document.body.appendChild(star);
-    
-    (function animateStar(s) {
-        setTimeout(() => {
-            s.style.opacity = Math.random() * 0.8 + 0.2; 
-            animateStar(s);
-        }, 200 + Math.random() * 800); 
-    })(star);
-}
-
-// Partículas doradas
-const particleCount = 20;
-for (let i = 0; i < particleCount; i++) {
-    const p = document.createElement('div');
-    p.className = 'particle';
-    p.style.left = `50%`;
-    p.style.bottom = `50%`;
-    p.style.animationDelay = `${Math.random() * 2}s`;
-    document.body.appendChild(p);
-}
-
-// Confetti efecto sorpresa rápido
-const canvas = document.getElementById('confettiCanvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-const confettiColors = ["#FFD700", "#FFFFFF", "#AAAAAA"]; // dorado, blanco, gris suave
-const confettiPieces = [];
-
-// Crear confetti
-for (let i = 0; i < 120; i++) {
-  confettiPieces.push({
-    x: canvas.width/2, 
-    y: canvas.height/2, 
-    w: 6,
-    h: 10,
-    color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
-    speedX: (Math.random() - 0.5) * 15,
-    speedY: Math.random() * -15 - 5,
-    rotation: Math.random() * 360,
-    rotationSpeed: Math.random() * 20 - 10
-  });
-}
-
-function drawConfetti() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  confettiPieces.forEach((p, index) => {
-    ctx.save();
-    ctx.translate(p.x, p.y);
-    ctx.rotate((p.rotation * Math.PI) / 180);
-    ctx.fillStyle = p.color;
-    ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-    ctx.restore();
-
-    p.x += p.speedX;
-    p.y += p.speedY;
-    p.speedY += 0.5; // gravedad
-    p.rotation += p.rotationSpeed;
-
-    if (p.y > canvas.height + 20 || p.x < -20 || p.x > canvas.width + 20) {
-      confettiPieces.splice(index, 1);
-    }
-  });
-
-  if (confettiPieces.length > 0) {
-    requestAnimationFrame(drawConfetti);
-  } else {
-    canvas.remove();
-  }
-}
-
-window.addEventListener("load", () => {
-  drawConfetti();
-});
-</script>
+<!-- Preloader barra de progreso -->
+<div id="loader">
+  <div style="color:white; font-size:20px;">Preparando...</div>
+  <div id="progress-bar">
+    <div id="progress-fill"></div>
+  </div>
+</div>
 
 <!-- Haces de luz -->
 <div class="beam left1"></div>
@@ -198,12 +149,99 @@ window.addEventListener("load", () => {
 <div class="beam center2"></div>
 <div class="beam center3"></div>
 
-<!-- Objeto central en 3D -->
-<model-viewer src="yellow+wristwatch+3d+model.glb" 
-              auto-rotate 
-              rotation-per-second="30deg" 
-              camera-controls>
+<!-- Modelo 3D -->
+<model-viewer id="watchModel" src="yellow+wristwatch+3d+model.glb"
+              auto-rotate
+              rotation-per-second="30deg"
+              camera-controls
+              shadow-intensity="1"
+              environment-image="neutral"
+              reveal="auto">
 </model-viewer>
+
+<!-- Scripts -->
+<script>
+// Estrellas
+const starCount = 30;
+for(let i=0;i<starCount;i++){
+  const star=document.createElement('div');
+  star.className='star';
+  star.style.top=Math.random()*100+'%';
+  star.style.left=Math.random()*100+'%';
+  document.body.appendChild(star);
+  (function animateStar(s){
+    setTimeout(()=>{
+      s.style.opacity=Math.random()*0.8+0.2;
+      animateStar(s);
+    },200+Math.random()*800);
+  })(star);
+}
+
+// Partículas doradas
+const particleCount=20;
+for(let i=0;i<particleCount;i++){
+  const p=document.createElement('div');
+  p.className='particle';
+  p.style.left='50%';
+  p.style.bottom='50%';
+  p.style.animationDelay=`${Math.random()*2}s`;
+  document.body.appendChild(p);
+}
+
+// Confetti rápido
+const canvas=document.getElementById('confettiCanvas');
+const ctx=canvas.getContext('2d');
+canvas.width=window.innerWidth;
+canvas.height=window.innerHeight;
+const confettiColors=["#FFD700","#FFFFFF","#AAAAAA"];
+const confettiPieces=[];
+for(let i=0;i<120;i++){
+  confettiPieces.push({
+    x:canvas.width/2,
+    y:canvas.height/2,
+    w:6,h:10,
+    color:confettiColors[Math.floor(Math.random()*confettiColors.length)],
+    speedX:(Math.random()-0.5)*15,
+    speedY:Math.random()*-15-5,
+    rotation:Math.random()*360,
+    rotationSpeed:Math.random()*20-10
+  });
+}
+function drawConfetti(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  confettiPieces.forEach((p,index)=>{
+    ctx.save();
+    ctx.translate(p.x,p.y);
+    ctx.rotate((p.rotation*Math.PI)/180);
+    ctx.fillStyle=p.color;
+    ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+    ctx.restore();
+    p.x+=p.speedX;
+    p.y+=p.speedY;
+    p.speedY+=0.5;
+    p.rotation+=p.rotationSpeed;
+    if(p.y>canvas.height+20||p.x<-20||p.x>canvas.width+20) confettiPieces.splice(index,1);
+  });
+  if(confettiPieces.length>0) requestAnimationFrame(drawConfetti);
+  else canvas.remove();
+}
+window.addEventListener("load",()=>{ drawConfetti(); });
+
+// Preloader con barra de progreso
+const model=document.getElementById('watchModel');
+const loader=document.getElementById('loader');
+const progressFill=document.getElementById('progress-fill');
+
+model.addEventListener('progress', (event)=>{
+  const progress=Math.round(event.detail.totalProgress*100);
+  progressFill.style.width=progress+'%';
+});
+
+model.addEventListener('load', ()=>{
+  loader.style.display='none';
+  model.style.opacity=1;
+});
+</script>
 
 </body>
 </html>
